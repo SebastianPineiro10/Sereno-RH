@@ -1,0 +1,145 @@
+:root{
+  --bg:#0b0f19;
+  --bg2:#0f1424;
+  --txt:#e6e9f2;
+  --muted:#9aa3b2;
+  --primary:#4ea8ff;
+  --glass:rgba(255,255,255,.06);
+  --stroke:rgba(255,255,255,.1);
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+
+
+/* Cubre toda la hoja y se superpone a cualquier layout padre */
+.login-container{
+  position: fixed;   /* ocupa la ventana completa */
+  inset: 0;          /* top:0; right:0; bottom:0; left:0 */
+  display: grid;
+  grid-template-columns: 1fr 1fr;      /* 50 / 50 */
+  grid-template-rows: auto auto;       /* título + subtítulo a la izq */
+  grid-template-areas:
+    "title form"
+    "subtitle form";
+  align-items: center;
+  width: 100vw;       /* ancho de la ventana */
+  min-height: 100dvh; /* alto de la ventana (mejor en móviles que 100vh) */
+  padding: 0 24px;    /* si quieres borde a los lados; pon 0 si lo quieres sin margen alguno */
+  background: linear-gradient(to right, var(--bg) 50%, var(--bg2) 50%);
+  color: var(--txt);
+  overflow: auto;     /* por si el contenido necesita scroll en pantallas chicas */
+}
+
+/* (El resto de tus reglas puede quedar igual) */
+
+/* Columna izquierda (título y subtítulo) */
+.login-title{
+  grid-area:title;
+  justify-self:center;
+  align-self:end;
+  margin:0;
+  font-size:32px;
+  font-weight:800;
+  text-align:center;
+}
+.login-subtitle{
+  grid-area:subtitle;
+  justify-self:center;
+  align-self:start;
+  margin:8px 0 0 0;
+  font-size:16px;
+  color:var(--muted);
+  text-align:center;
+}
+
+/* Columna derecha (card del formulario) */
+.login-form{
+  grid-area:form;
+  width:100%;
+  max-width:420px;
+  margin:0 auto;                  /* centra la tarjeta en la columna derecha */
+  padding:24px 24px 20px;
+  border-radius:16px;
+  /* si no tienes .glass-card global, estos estilos aseguran el aspecto glass */
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow);
+  backdrop-filter:saturate(140%) blur(12px);
+}
+
+/* Tipografía del card */
+.login-form .card-title{
+  margin:0 0 10px 0;
+  font-size:20px;
+  font-weight:700;
+}
+
+/* Campos */
+.login-form label{
+  display:block;
+  font-size:13px;
+  color:var(--muted);
+  margin:10px 0 6px;
+}
+.login-form .glass-input,
+.login-form input[type="email"],
+.login-form input[type="password"]{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  background:#0f1424;
+  border:1px solid var(--stroke);
+  color:var(--txt);
+  outline:none;
+}
+
+/* Botón */
+.login-form .button.primary{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(135deg, #4ea8ff, #7c5cff);
+  color:#0b0f19;
+  font-weight:800;
+  cursor:pointer;
+}
+
+/* Utilidades presentes en tu JSX */
+.w-full{ width:100%; justify-content:center; }
+.mt-4{ margin-top:16px; }
+.text-sm{ font-size:13px; }
+.text-white{ color:var(--txt); }
+/* la clase con “/” necesita escape */
+.text-white\/70{ color:rgba(230,233,242,.7); }
+
+/* Error */
+.error-message{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:10px;
+  font-size:13px;
+  background:rgba(255,107,107,.12);
+  border:1px solid rgba(255,107,107,.28);
+  color:#ffb1b1;
+}
+
+/* ===== Responsive: apilar en móvil ===== */
+@media (max-width: 900px){
+  .login-container{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto auto;
+    grid-template-areas:
+      "title"
+      "subtitle"
+      "form";
+    padding:32px 16px;
+    background:var(--bg2); /* en móvil usa el fondo derecho */
+  }
+  .login-title{ align-self:auto; }
+  .login-subtitle{ align-self:auto; }
+  .login-form{ max-width:480px; }
+}
