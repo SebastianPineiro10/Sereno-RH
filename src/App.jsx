@@ -4,7 +4,7 @@ import Login from './pages/Login';
 import Admin from './pages/Admin';
 import Employee from './pages/Employee';
 import { getStorageData, setStorageData, seedStorage, STORAGE_KEYS } from './lib/storage';
-import './app.css'; // << importa tu CSS global (glass, fondos, etc.)
+import './App.css'; // << importa tu CSS global (glass, fondos, etc.)
 
 export const DataContext = createContext();
 
