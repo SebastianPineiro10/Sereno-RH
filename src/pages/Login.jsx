@@ -65,9 +65,9 @@ const Login = ({ onLogin }) => {
 
         <div className="mt-4 text-sm text-center text-white/70">
           <p>Credenciales para probar:</p>
-          <p><strong className="text-white">Admin:</strong> admin@serenorh.com / admin123</p>
-          <p><strong className="text-white">Empleado:</strong> empleado@serenorh.com / empleado123</p>
-          <p><strong className="text-white">Empleado:</strong> marta.lopez@serenorh.com / martha123</p>
+          <p><strong className="text-white">Ana Garica (Admin):</strong> admin@serenorh.com / pin: admin123</p>
+          <p><strong className="text-white">Luis Pérez (Empleado):</strong> perez@serenorh.com / pin: empleado123</p>
+          <p><strong className="text-white">Marta López (Empleado):</strong> marta.lopez@serenorh.com / pin: martha123</p>
         </div>
       </form>
     </div>

@@ -175,7 +175,7 @@ body{
 
 .button.primary{
   background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
-  color:#0b0f19;
+  color: #fff;
 }
 .button.secondary{
   background: rgba(255, 255, 255, 0.2);
@@ -351,21 +351,24 @@ body{
   align-items:center;
 }
 
-/* ---------------------------------------------------------
-   Filtros
---------------------------------------------------------- */
+/* === Glass más fuerte para filtros === */
 .filter-controls{
+  position: relative;
+  z-index: 20;
   display:flex;
   flex-wrap:wrap;
   gap:1.5rem;
   align-items:flex-end;
   margin-top:1.5rem;
   padding:1.5rem;
-  background: linear-gradient(180deg, rgba(78,168,255,.06), rgba(124,92,255,.04));
-  border: 1px solid rgba(78,168,255,.18);
+  background:
+    linear-gradient(180deg, rgba(78,168,255,.18), rgba(124,92,255,.14)),
+    rgba(9,14,25,.65);
+  border: 1px solid rgba(78,168,255,.35);
   border-radius:16px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  backdrop-filter: blur(12px) saturate(140%) brightness(1.05);
+  -webkit-backdrop-filter: blur(12px) saturate(140%) brightness(1.05);
 }
 .filter-controls label{
   flex:1;
@@ -374,23 +377,89 @@ body{
 }
 .filter-controls button{ flex-grow:0; }
 
-/* ---------------------------------------------------------
-   Utilidades
---------------------------------------------------------- */
-.w-full{ width:100%; justify-content:center; }
-.text-sm{ font-size:13px; }
-.text-white{ color:#fff; }
-.text-white\/70{ color:rgba(255,255,255,.7); } /* recuerda escapar la / si usas Tailwind-like */
-
-/* ---------------------------------------------------------
-   Responsive
---------------------------------------------------------- */
-@media (max-width: 768px){
-  .main-content{ padding:1rem; }
-  .page-header{ flex-direction:column; gap:1rem; text-align:center; }
-  .header-actions{ flex-direction:column; width:100%; }
-  .check-in-status{ flex-direction:column; width:100%; }
-  .check-in-status button{ width:100%; }
-  .filter-controls{ flex-direction:column; align-items:stretch; }
-  .login-card{ width:100%; }
+/* === Multiselect compacto === */
+.ms-trigger{
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
 }
+.ms-summary{
+  font-size: 14px;
+  opacity: .9;
+}
+
+/* Panel: SIEMPRE hacia abajo */
+.ms-panel{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  width: 100%;
+  max-height: 280px;
+  overflow: auto;
+  padding: 10px;
+  border-radius: 12px;
+  z-index: 1200;
+  background:
+    linear-gradient(180deg, rgba(78,168,255,.20), rgba(124,92,255,.16)),
+    rgba(9,14,25,.72);
+  border: 1px solid rgba(78,168,255,.38);
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
+  backdrop-filter: blur(14px) saturate(150%) brightness(1.06);
+  -webkit-backdrop-filter: blur(14px) saturate(150%) brightness(1.06);
+}
+
+.ms-list{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Opción y checkbox accesibles (más grandes) */
+.ms-option{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.ms-option:hover{
+  background: rgba(255,255,255,.06);
+}
+.ms-checkbox{
+  width: 20px;
+  height: 20px;
+  accent-color: #7c5cff;       /* color del check en navegadores compatibles */
+  transform: scale(1);          /* tamaño base (ya es 20px) */
+}
+@supports not (accent-color: #000) {
+  /* fallback mínimo si no hay accent-color */
+  .ms-checkbox{
+    transform: scale(1.15);
+  }
+}
+
+/* Asegura que la tabla quede por debajo */
+.table-container{
+  position: relative;
+  z-index: 1;
+}
+
+/* Inputs mejor legibles sobre glass */
+.glass-input{
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.28);
+  color: #fff;
+}
+.glass-input:focus{
+  border-color: rgba(255,255,255,.55);
+}
+
+@media (max-width: 768px){
+  .filter-controls{ flex-direction:column; align-items:stretch; }
+}
+

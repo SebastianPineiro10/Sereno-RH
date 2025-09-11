@@ -103,7 +103,7 @@
   border:none;
   border-radius:10px;
   background:linear-gradient(135deg, #4ea8ff, #7c5cff);
-  color:#0b0f19;
+  color: #fff;
   font-weight:800;
   cursor:pointer;
 }

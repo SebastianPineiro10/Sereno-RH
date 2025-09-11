@@ -3,7 +3,7 @@ const yyyyMm = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}
 
 export const seedEmployees = [
   { id: "e1", nombre: "Ana García", email: "ana@serenorh.com", rol: "ADMIN", activo: true },
-  { id: "e2", nombre: "Luis Pérez", email: "luis@serenorh.com", rol: "EMPLOYEE", activo: true },
+  { id: "e2", nombre: "Luis Pérez", email: "perez@serenorh.com", rol: "EMPLOYEE", activo: true },
   { id: "e3", nombre: "María López", email: "maria@serenorh.com", rol: "EMPLOYEE", activo: false },
 ];
 

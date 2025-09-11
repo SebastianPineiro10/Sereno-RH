@@ -46,7 +46,7 @@ export const seedStorage = () => {
   if (!getStorageData(STORAGE_KEYS.passwords)) {
     const initialPasswords = {
       'admin@serenorh.com': 'admin123',
-      'empleado@serenorh.com': 'empleado123',
+      'perez@serenorh.com': 'empleado123',
       'marta.lopez@serenorh.com': 'martha123'
 
     };

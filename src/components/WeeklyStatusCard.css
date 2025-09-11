@@ -1,0 +1,36 @@
+/* Tooltip para el gráfico semanal */
+.weekly-tooltip {
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  min-width: 140px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+/* Leyenda de colores */
+.weekly-status-legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.legend.early {
+  color: #1e88e5;
+}
+
+.legend.on-time {
+  color: #4caf50;
+}
+
+.legend.delay {
+  color: #ffb300;
+}
+
+.legend.late {
+  color: #e53935;
+}
