@@ -10,6 +10,7 @@ import { exportToExcel } from "../lib/excel";
 import { setStorageData, STORAGE_KEYS } from '../lib/storage';
 import WeeklyStatusCard from "../components/WeeklyStatusCard";
 
+
 const formatDuration = (checkin, checkout) => {
   // Si no hay datos, devolvemos —
   if (!checkin || !checkout) return "—";
@@ -17,7 +18,7 @@ const formatDuration = (checkin, checkout) => {
   const normalizeTime = (time) => {
     const clean = time.trim().toUpperCase();
 
-    // ✅ Detectamos si viene con AM/PM
+    // Detectamos si viene con AM/PM
     if (clean.includes("A.M.") || clean.includes("P.M.") || clean.includes("AM") || clean.includes("PM")) {
       let [rawHour, rawMinute] = clean.replace(/[^\d:]/g, "").split(":").map(Number);
       const isPM = clean.includes("P.M.") || clean.includes("PM");
@@ -29,9 +30,11 @@ const formatDuration = (checkin, checkout) => {
       return [rawHour, rawMinute];
     }
 
-    // ✅ Si ya está en formato 24h, lo dejamos igual
+    // Si ya está en formato 24h, lo dejamos igual
     return time.split(":").map(Number);
   };
+
+
 
   // Normalizamos ambas horas
   const [inHours, inMinutes] = normalizeTime(checkin);
@@ -64,11 +67,11 @@ const Admin = ({ onLogout }) => {
   const [modalMode, setModalMode] = useState('add');
   const [currentEmployee, setCurrentEmployee] = useState(null);
 
-  // 🔎 Búsqueda por empleado (nombre / email)
+  //  Búsqueda por empleado (nombre / email)
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  // ✅ Multiselección (dropdown con “Todos” + resumen compacto)
+  //  Multiselección (dropdown con “Todos” + resumen compacto)
   const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
 
   const [filteredCheckins, setFilteredCheckins] = useState(checkins);
@@ -77,6 +80,32 @@ const Admin = ({ onLogout }) => {
   const [showRewardModal, setShowRewardModal] = useState(false);
   const [rewardModalMode, setRewardModalMode] = useState('add');
   const [currentReward, setCurrentReward] = useState(null);
+
+    const [hoveredLine, setHoveredLine] = useState(null);
+
+  const mergedData = useMemo(() => {
+  const dates = Array.from(new Set(checkins.map((c) => c.date))).sort();
+  return dates.map((date) => {
+    const row = { date };
+    employees.forEach((emp) => {
+      const records = checkins.filter(
+        (c) => c.employeeId === emp.id && c.date === date
+      );
+      if (records.length > 0) {
+        const punctual = records.filter((c) => {
+          const limit = new Date("2000-01-01T09:15:00");
+          return new Date(`2000-01-01 ${c.checkinTime}`) <= limit;
+        }).length;
+        const total = records.length;
+        row[emp.name] = Math.round((punctual / total) * 100);
+      } else {
+        row[emp.name] = 0;
+      }
+    });
+    return row;
+  });
+}, [checkins, employees]);
+
 
   // ===================== Utilidades búsqueda robusta =====================
   const normalizeTxt = (s = '') =>
@@ -143,7 +172,54 @@ const Admin = ({ onLogout }) => {
   }, [debouncedQuery, selectedEmployeeIds, checkins, empById]);
 
   const globalMetrics = calculateGlobalMetrics(checkins, employees);
-  const dailyPunctualityData = calculateDailyPunctuality(checkins, 30);
+// Genera datos diarios por empleado
+const dailyPunctualityPerEmployee = useMemo(() => {
+  const grouped = {};
+
+  // Recorremos todos los checkins y agrupamos por fecha y empleado
+  checkins.forEach((c) => {
+    const date = c.date;
+    const empId = c.employeeId;
+    const empName = empById[empId]?.name || "Desconocido";
+
+    if (!grouped[empId]) grouped[empId] = {};
+    if (!grouped[empId][date]) grouped[empId][date] = { total: 0, punctual: 0 };
+
+    grouped[empId][date].total += 1;
+
+    // Calculamos si llegó puntual
+    if (c.checkinTime) {
+      const checkinTime = new Date(`2000-01-01 ${c.checkinTime}`);
+      const limit = new Date("2000-01-01T09:15:00");
+      if (checkinTime <= limit) {
+        grouped[empId][date].punctual += 1;
+      }
+    }
+  });
+
+  // Creamos dataset final compatible con Recharts
+  const dates = Array.from(new Set(checkins.map((c) => c.date))).sort();
+  return employees.map((emp, index) => {
+    const colorPalette = [
+      "#4ea8ff", "#7c5cff", "#4caf50", "#ffb300", "#e53935",
+      "#00bcd4", "#ff4081", "#9c27b0"
+    ];
+    const color = colorPalette[index % colorPalette.length];
+
+    return {
+      name: emp.name,
+      color,
+      data: dates.map((date) => {
+        const record = grouped[emp.id]?.[date] || { total: 0, punctual: 0 };
+        const punctuality = record.total
+          ? Math.round((record.punctual / record.total) * 100)
+          : 0;
+        return { date, punctuality };
+      }),
+    };
+  });
+}, [checkins, employees, empById]);
+
 
   // =========================== Empleados ===========================
   const openAddModal = () => {
@@ -412,22 +488,201 @@ const Admin = ({ onLogout }) => {
         </Card>
       </div>
 
-      <h2 className="section-title">Gráfica de Rendimiento</h2>
-      <Card title="Puntualidad General (Últimos 30 días)" className="chart-card">
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={dailyPunctualityData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.2)" />
-            <XAxis dataKey="date" stroke="#fff" tick={{ fill: '#fff', fontSize: 12 }} />
-            <YAxis stroke="#fff" tick={{ fill: '#fff', fontSize: 12 }} domain={[0, 100]} />
-            <Tooltip
-              contentStyle={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '8px' }}
-              labelStyle={{ color: '#fff' }}
-              itemStyle={{ color: '#fff' }}
-            />
-            <Line type="monotone" dataKey="Puntualidad %" stroke="#8884d8" strokeWidth={3} activeDot={{ r: 8 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      </Card>
+    <h2 className="section-title">Rendimiento por Empleado</h2>
+    <Card title="Puntualidad Individual (Últimos 30 días)" className="chart-card">
+    <ResponsiveContainer width="100%" height={350}>
+      <LineChart
+        data={mergedData}
+        onMouseMove={(state) => {
+          if (state && state.activeTooltipIndex !== undefined) {
+            setHoveredLine(state.activeTooltipIndex);
+          }
+        }}
+        onMouseLeave={() => setHoveredLine(null)}
+        margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+      >
+
+        {/* Grid sutil */}
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.15)" />
+
+        {/* Eje X */}
+        <XAxis
+          dataKey="date"
+          stroke="#fff"
+          tick={{ fill: "#fff", fontSize: 12 }}
+        />
+
+        {/* Eje Y */}
+        <YAxis
+          stroke="#fff"
+          tick={{ fill: "#fff", fontSize: 12 }}
+          domain={[0, 100]}
+        />
+
+        <Tooltip
+        trigger="hover"                 //  Permite moverte libremente
+        isAnimationActive={true}        //  Activa animaciones suaves
+        allowEscapeViewBox={{ x: true, y: true }} // Tooltip no se corta
+        cursor={{
+          stroke: "rgba(255,255,255,0.25)",
+          strokeWidth: 1.5,
+          strokeDasharray: "4 4",
+        }}
+        contentStyle={{
+          background: "rgba(15, 20, 36, 0.92)",
+          backdropFilter: "blur(10px)",
+          border: `1px solid ${hoveredLine !== null
+            ? dailyPunctualityPerEmployee[hoveredLine].color
+            : "rgba(255,255,255,0.2)"}`,
+          borderRadius: "12px",
+          padding: "12px 14px",
+          color: "#fff",
+          fontSize: "13px",
+          boxShadow: `0 0 20px ${hoveredLine !== null
+            ? dailyPunctualityPerEmployee[hoveredLine].color + "55"
+            : "rgba(0,0,0,0.35)"}`,
+          transition: "all 0.25s ease",
+        }}
+        labelStyle={{
+          color: hoveredLine !== null
+            ? dailyPunctualityPerEmployee[hoveredLine].color
+            : "#4ea8ff",
+          fontWeight: "700",
+          fontSize: "14px",
+          textShadow: hoveredLine !== null
+            ? `0 0 8px ${dailyPunctualityPerEmployee[hoveredLine].color}55`
+            : "none",
+          transition: "color 0.25s ease",
+        }}
+        itemStyle={{
+          color: "#fff",
+          fontWeight: "500",
+        }}
+        formatter={(value) => `${value}%`}
+      />
+
+      {employees.map((emp, index) => {
+        const colorPalette = [
+          "#4ea8ff", "#7c5cff", "#4caf50", "#ffb300",
+          "#e53935", "#00bcd4", "#ff4081", "#9c27b0"
+        ];
+        const color = colorPalette[index % colorPalette.length];
+
+        return (
+          <Line
+            key={emp.id}
+            type="monotone"
+            dataKey={emp.name}
+            name={emp.name}
+            stroke={color}
+            strokeWidth={hoveredLine === index ? 4 : 2.5}
+            opacity={hoveredLine === null || hoveredLine === index ? 1 : 0.15}
+            activeDot={{
+              r: 8,
+              strokeWidth: 3,
+              fill: color,
+              stroke: "#fff",
+              style: {
+                filter: `drop-shadow(0 0 10px ${color})`,
+                transition: "all 0.25s ease",
+              },
+            }}
+            dot={false}
+            style={{
+              filter:
+                hoveredLine === index
+                  ? `drop-shadow(0px 0px 14px ${color})`
+                  : "none",
+              transition: "all 0.25s ease",
+            }}
+          />
+        );
+      })}
+          <Tooltip
+            trigger="hover"                 // 🔹 Permite moverte libremente
+            isAnimationActive={true}        // 🔹 Activa animaciones suaves
+            allowEscapeViewBox={{ x: true, y: true }} // 🔹 Tooltip no se corta
+            cursor={{
+              stroke: "rgba(255,255,255,0.25)",
+              strokeWidth: 1.5,
+              strokeDasharray: "4 4",
+            }}
+            contentStyle={{
+              background: "rgba(15, 20, 36, 0.92)",
+              backdropFilter: "blur(10px)",
+              border: `1px solid ${hoveredLine !== null
+                ? dailyPunctualityPerEmployee[hoveredLine].color
+                : "rgba(255,255,255,0.2)"}`,
+              borderRadius: "12px",
+              padding: "12px 14px",
+              color: "#fff",
+              fontSize: "13px",
+              boxShadow: `0 0 20px ${hoveredLine !== null
+                ? dailyPunctualityPerEmployee[hoveredLine].color + "55"
+                : "rgba(0,0,0,0.35)"}`,
+              transition: "all 0.25s ease",
+            }}
+            labelStyle={{
+              color: hoveredLine !== null
+                ? dailyPunctualityPerEmployee[hoveredLine].color
+                : "#4ea8ff",
+              fontWeight: "700",
+              fontSize: "14px",
+              textShadow: hoveredLine !== null
+                ? `0 0 8px ${dailyPunctualityPerEmployee[hoveredLine].color}55`
+                : "none",
+              transition: "color 0.25s ease",
+            }}
+            itemStyle={{
+              color: "#fff",
+              fontWeight: "500",
+            }}
+            formatter={(value) => `${value}%`}
+          />
+
+          {employees.map((emp, index) => {
+            const colorPalette = [
+              "#4ea8ff", "#7c5cff", "#4caf50", "#ffb300",
+              "#e53935", "#00bcd4", "#ff4081", "#9c27b0"
+            ];
+            const color = colorPalette[index % colorPalette.length];
+
+            return (
+              <Line
+                key={emp.id}
+                type="monotone"
+                dataKey={emp.name}
+                name={emp.name}
+                stroke={color}
+                strokeWidth={hoveredLine === index ? 4 : 2.5}
+                opacity={hoveredLine === null || hoveredLine === index ? 1 : 0.15}
+                activeDot={{
+                  r: 8,
+                  strokeWidth: 3,
+                  fill: color,
+                  stroke: "#fff",
+                  style: {
+                    filter: `drop-shadow(0 0 10px ${color})`,
+                    transition: "all 0.25s ease",
+                  },
+                }}
+                dot={false}
+                style={{
+                  filter:
+                    hoveredLine === index
+                      ? `drop-shadow(0px 0px 14px ${color})`
+                      : "none",
+                  transition: "all 0.25s ease",
+                }}
+              />
+            );
+          })}
+
+        </LineChart>
+      </ResponsiveContainer>
+    </Card>
+
+
 
     {/* === Estado Semanal de Empleados === */}
     <h2 className="section-title">Estado Semanal de Empleados</h2>
@@ -440,7 +695,7 @@ const Admin = ({ onLogout }) => {
       }}
     >
       {employees.map((employee) => {
-        // 🔹 Aquí usamos los datos reales de checkins por empleado
+        // Aquí usamos los datos reales de checkins por empleado
         const weeklyStatus = checkins
           .filter((c) => c.employeeId === employee.id)
           .map((c) => {

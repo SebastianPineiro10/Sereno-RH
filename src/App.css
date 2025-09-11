@@ -28,14 +28,21 @@
 /* ---------------------------------------------------------
    Reset básico
 --------------------------------------------------------- */
-* { box-sizing: border-box; }
-html, body, #root { height: 100%; }
-body{
-  margin:0;
-  font-family:'Poppins', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  color:var(--txt);
-  background: radial-gradient(1200px 800px at 70% -10%, #123 0%, #0b0f19 40%, #0b0f19 100%);
+body {
+  margin: 0;
+  font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: var(--txt);
+  background-color: var(--bg); /* ✅ Fallback sólido */
+  background-image: radial-gradient(
+    1200px 800px at 70% -10%,
+    #123 0%,
+    #0b0f19 40%,
+    #0b0f19 100%
+  );
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* ✅ Gradiente fijo */
 }
+
 
 /* ---------------------------------------------------------
    App shell
@@ -46,14 +53,81 @@ body{
   justify-content: center;
   align-items: center;
 }
-.main-content{
-  position: relative;
-  isolation: isolate;              /* crea stacking para el ::before */
+.main-content::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  padding: 2rem;
-  overflow-y: auto;
-  box-sizing: border-box;
+  min-height: 100%;  /* ✅ Se asegura que cubra todo */
+  z-index: -1;
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--glass-sheet-a), var(--glass-sheet-b));
+  border: 1px solid var(--glass-sheet-border);
+  box-shadow: var(--shadow);
+  backdrop-filter: saturate(140%) blur(var(--glass-blur));
+  -webkit-backdrop-filter: saturate(140%) blur(var(--glass-blur));
 }
+.app-container {
+  min-height: 100vh;
+  background-color: var(--bg);
+}
+
+/* ---------------------------------------------------------
+   Tooltip glass animado
+--------------------------------------------------------- */
+.chart-tooltip {
+  background: rgba(15, 20, 36, 0.85);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid rgba(78, 168, 255, 0.25);
+  border-radius: 14px;
+  padding: 12px 16px;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.5;
+  min-width: 140px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  animation: tooltipFadeIn 0.25s ease-out;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chart-tooltip:hover {
+  transform: scale(1.04);
+  box-shadow: 0 10px 32px rgba(78, 168, 255, 0.35);
+}
+
+/* Animación sutil de entrada */
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Glow dinámico para línea activa */
+.line-highlighted {
+  filter: drop-shadow(0 0 14px currentColor);
+  transition: filter 0.25s ease, opacity 0.25s ease;
+}
+
+/* Glow dinámico para el punto activo */
+.recharts-active-dot {
+  filter: drop-shadow(0 0 10px currentColor);
+  transition: filter 0.25s ease, r 0.25s ease;
+}
+
+/* Tooltip con animación de entrada */
+.recharts-tooltip-wrapper {
+  transition: all 0.25s ease !important;
+}
+
+
+
 
 /* Hoja glass azul detrás del contenido (Admin/Empleado) */
 .main-content::before{
@@ -234,26 +308,31 @@ body{
 /* ---------------------------------------------------------
    Modales
 --------------------------------------------------------- */
-.modal-overlay{
-  position:fixed;
-  inset:0;
-  background-color: rgba(0,0,0,.5);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:1000;
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
 }
-.modal-content{
-  width:90%;
-  max-width:500px;
-  padding:2.5rem;
-  position:relative;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius:16px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+
+.modal-content {
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 500px;
+  max-width: 95%;
+  animation: modalIn 0.3s ease-out;
 }
+
+@keyframes modalIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
 .modal-header{
   display:flex;
   justify-content:space-between;
