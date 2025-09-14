@@ -1,10 +1,10 @@
 // src/App.jsx
 import React, { useState, useEffect, createContext } from 'react';
 import Login from './pages/Login';
-import Admin from './pages/Admin';
-import Employee from './pages/Employee';
-import { getStorageData, setStorageData, seedStorage, STORAGE_KEYS } from './lib/storage';
-import './App.css'; // << importa tu CSS global (glass, fondos, etc.)
+import DashboardLayout from './components/DashboardLayout';
+import EmployeeLayout from './components/EmployeeLayout'; // 👈 importa el layout de empleado
+import { getStorageData, seedStorage, STORAGE_KEYS } from './lib/storage';
+import './App.css';
 
 export const DataContext = createContext();
 
@@ -47,10 +47,11 @@ const App = () => {
 
   const renderContent = () => {
     if (loggedInUserRole === 'admin') {
-      return <Admin onLogout={handleLogout} />;
+      return <DashboardLayout onLogout={handleLogout} />;
     }
     if (loggedInUserRole === 'employee' && currentUserId) {
-      return <Employee onLogout={handleLogout} currentUserId={currentUserId} />;
+      // 👇 usar EmployeeLayout en vez de Employee directo
+      return <EmployeeLayout onLogout={handleLogout} currentUserId={currentUserId} />;
     }
     return <Login onLogin={handleLogin} />;
   };

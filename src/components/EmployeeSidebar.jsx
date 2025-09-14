@@ -1,25 +1,25 @@
 import React, { useState } from "react";
 import {
-  Grid,
+  Home,
   Clock,
-  Users,
-  Gift,
+  User,
   Target,
+  Gift,
   BarChart3,
-  Settings,
+  Calendar,
 } from "lucide-react";
 
-const Sidebar = ({ active = "dashboard", onNavigate }) => {
+const EmployeeSidebar = ({ active = "dashboard", onNavigate, employeeName = "Empleado" }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const items = [
-    { key: "dashboard", label: "Dashboard", Icon: Grid },
-    { key: "asistencia", label: "Asistencia", Icon: Clock },
-    { key: "empleados", label: "Empleados", Icon: Users },
-    { key: "bonos", label: "Bonos", Icon: Gift },
-    { key: "metas", label: "Metas", Icon: Target },
-    { key: "reportes", label: "Reportes", Icon: BarChart3 },
-    { key: "config", label: "Configuración", Icon: Settings },
+    { key: "dashboard", label: "Inicio", Icon: Home },
+    { key: "asistencia", label: "Mi Asistencia", Icon: Clock },
+    { key: "perfil", label: "Mi Perfil", Icon: User },
+    { key: "metas", label: "Mis Metas", Icon: Target },
+    { key: "recompensas", label: "Recompensas", Icon: Gift },
+    { key: "reportes", label: "Mis Reportes", Icon: BarChart3 },
+    { key: "calendario", label: "Calendario", Icon: Calendar },
   ];
 
   const handleNavigate = (key) => {
@@ -41,7 +41,7 @@ const Sidebar = ({ active = "dashboard", onNavigate }) => {
           <div className="logo">SR</div>
           <div className="brand-text">
             <div style={{ fontWeight: 800 }}>Sereno RH</div>
-            <div style={{ fontSize: 12, color: "var(--muted)" }}>Panel</div>
+            <div style={{ fontSize: 12, color: "var(--muted)" }}>{employeeName}</div>
           </div>
         </div>
 
@@ -64,4 +64,4 @@ const Sidebar = ({ active = "dashboard", onNavigate }) => {
   );
 };
 
-export default Sidebar;
+export default EmployeeSidebar;
